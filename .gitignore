@@ -1,0 +1,16 @@
+.DS_Store
+bin/
+gen/
+cocos2d/build/build/
+cocos2d/build/cocos2d_libs.xcodeproj/xcuserdata/
+proj.android/.settings/org.eclipse.jdt.core.prefs
+proj.android/assets/
+proj.android/libs/
+proj.android/lint.xml
+proj.android/obj/
+proj.ios_mac/Cocos2dxStudy.xcodeproj/project.xcworkspace/
+proj.ios_mac/Cocos2dxStudy.xcodeproj/xcuserdata/
+proj.ios_mac/build/
+
+
+
