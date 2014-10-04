@@ -15,8 +15,17 @@ public:
     // a selector callback
     void menuCloseCallback(cocos2d::Ref* pSender);
     
+    virtual bool onTouchBegan(cocos2d::Touch *touch, cocos2d::Event *unused_event);
+    virtual void onTouchMoved(cocos2d::Touch *touch, cocos2d::Event *unused_event);
+    virtual void onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *unused_event);
+    virtual void onTouchCancelled(cocos2d::Touch *touch, cocos2d::Event *unused_event);
+    virtual void onEnter();
+    
     // implement the "static create()" method manually
     CREATE_FUNC(HelloWorld);
+    
+private:
+    bool isTouchModeMonsterStrike;
 };
 
 #endif // __HELLOWORLD_SCENE_H__

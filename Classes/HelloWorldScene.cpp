@@ -438,6 +438,74 @@ bool HelloWorld::init()
     menu->addChild(damage2Item);
     menu->addChild(runItem);
     
+    
+    // ここからタッチイベント
+    
+    // レイヤーのタッチイベントの設定
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->onTouchBegan = CC_CALLBACK_2(HelloWorld::onTouchBegan, this);
+    listener->onTouchMoved = CC_CALLBACK_2(HelloWorld::onTouchMoved, this);
+    listener->onTouchEnded = CC_CALLBACK_2(HelloWorld::onTouchEnded, this);
+    this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(listener, this);
+
+    // ユニティちゃんのタッチイベントの設定
+    auto unityChanListener = EventListenerTouchOneByOne::create();
+    unityChanListener->onTouchBegan = [unityChan](Touch* touch, Event* event){
+        CCLOG("UnityChan onTouchBegan x: %4.2f, y: %4.2f", touch->getLocation().x, touch->getLocation().y);
+        auto rect = unityChan->getBoundingBox();
+        CCLOG("UnityChan size width: %4.2f, height: %4.2f", unityChan->getContentSize().width, unityChan->getContentSize().height);
+        CCLOG("UnityChan rect minX: %4.2f, minY: %4.2f, maxX: %4.2f, maxY: %4.2f,", rect.getMinX(), rect.getMinY(), rect.getMaxX(), rect.getMaxY());
+        if (rect.containsPoint(touch->getLocation()))
+        {
+            CCLOG("Touched UnityChan!");
+            return true;
+        }
+        return false;
+    };
+    unityChanListener->onTouchMoved = [unityChan](Touch* touch, Event* event){
+        CCLOG("UnityChan onTouchMoved x: %4.2f, y: %4.2f", touch->getLocation().x, touch->getLocation().y);
+        unityChan->setPosition(touch->getLocation());
+    };
+    unityChanListener->onTouchEnded = [unityChan](Touch* touch, Event* event){
+        CCLOG("UnityChan onTouchEnded x: %4.2f, y: %4.2f", touch->getLocation().x, touch->getLocation().y);
+    };
+    getEventDispatcher()->addEventListenerWithSceneGraphPriority(unityChanListener, unityChan);
+    
+    
+    // タッチモードのテキストの作成
+    auto label = Label::createWithSystemFont("ユニティちゃん動かすモード", "Arial", 20);
+    label->setPosition(800,150);
+    label->setName("TouchMode");
+    this->addChild(label, 0);
+    // モンスターストライク風に表示する時の作成
+    auto sprite = Sprite::create("arrow.png");
+    sprite->setVisible(false);
+    sprite->setFlippedX(true);
+    sprite->setName("Arrow");
+    this->addChild(sprite, 0);
+    auto touchEventItem = MenuItemImage::create(
+                                             "btn_touch_event.png",
+                                             "",
+                                             [this](Ref* p){
+                                                 Label* label = static_cast<Label*>(this->getChildByName("TouchMode"));
+                                                 auto unityChan = this->getChildByName("UnityChan");
+                                                 if (this->isTouchModeMonsterStrike)
+                                                 {
+                                                     label->setString("ユニティちゃん動かすモード");
+                                                     unityChan->getEventDispatcher()->pauseEventListenersForTarget(this);
+                                                     unityChan->getEventDispatcher()->resumeEventListenersForTarget(unityChan);
+                                                 }
+                                                 else
+                                                 {
+                                                     label->setString("モンスターストライク風モード");
+                                                     unityChan->getEventDispatcher()->pauseEventListenersForTarget(unityChan);
+                                                     unityChan->getEventDispatcher()->resumeEventListenersForTarget(this);
+                                                 }
+                                                 this->isTouchModeMonsterStrike = !this->isTouchModeMonsterStrike;
+                                             });
+    touchEventItem->setPosition(900,100);
+    menu->addChild(touchEventItem);
+    
     return true;
 }
 //void HelloWorld::menuCloseCallback(Ref* pSender)
@@ -458,3 +526,71 @@ void HelloWorld::menuCloseCallback(Ref* pSender)
     exit(0);
 #endif
 }
+
+bool HelloWorld::onTouchBegan(cocos2d::Touch *touch, cocos2d::Event *unused_event)
+{
+    CCLOG("HelloWorld::onTouchBegan x: %4.2f, y: %4.2f", touch->getLocation().x, touch->getLocation().y);
+    auto unityChan = this->getChildByName("UnityChan");
+    auto rect = unityChan->getBoundingBox();
+    if (rect.containsPoint(touch->getLocation()))
+    {
+        CCLOG("Touched UnityChan!");
+        return true;
+    }
+    return false;
+}
+void HelloWorld::onTouchMoved(cocos2d::Touch *touch, cocos2d::Event *unused_event)
+{
+    CCLOG("HelloWorld::onTouchMoved x: %4.2f, y: %4.2f", touch->getLocation().x, touch->getLocation().y);
+    auto unityChan = this->getChildByName("UnityChan");
+    auto arrow = this->getChildByName("Arrow");
+    auto unityChanRect = unityChan->getBoundingBox();
+    if (unityChanRect.containsPoint(touch->getLocation()))
+    {
+        CCLOG("TouchMove in UnityChan");
+        arrow->setVisible(false);
+    }
+    else
+    {
+        auto diffVec2 = touch->getLocation() - unityChan->getPosition();
+        auto rad = diffVec2.getAngle();
+        arrow->setPosition(unityChan->getPosition());
+        auto degree = CC_RADIANS_TO_DEGREES(rad);
+        CCLOG("degree: %4.2f度", degree);
+        arrow->setRotation(-degree);
+        auto distance = unityChan->getPosition().getDistance(touch->getLocation());
+        auto halfWidth = arrow->getContentSize().width / 2;
+        arrow->setScaleX(distance/halfWidth);
+        arrow->setVisible(true);
+    }
+}
+void HelloWorld::onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *unused_event)
+{
+    CCLOG("HelloWorld::onTouchEnded x: %4.2f, y: %4.2f", touch->getLocation().x, touch->getLocation().y);
+    auto unityChan = this->getChildByName("UnityChan");
+    auto arrow = this->getChildByName("Arrow");
+    auto unityChanRect = unityChan->getBoundingBox();
+    arrow->setVisible(false);
+    if (unityChanRect.containsPoint(touch->getLocation()))
+    {
+        CCLOG("ToucEnd in UnityChan");
+    }
+    else
+    {
+        unityChan->runAction(MoveBy::create(0.3f, (unityChan->getPosition()-touch->getLocation())*1.5));
+    }
+}
+void HelloWorld::onTouchCancelled(cocos2d::Touch *touch, cocos2d::Event *unused_event)
+{
+    CCLOG("HelloWorld::onTouchCancelled x: %4.2f, y: %4.2f", touch->getLocation().x, touch->getLocation().y);
+}
+
+void HelloWorld::onEnter()
+{
+    Layer::onEnter();
+    // レイヤーのタッチイベントでモンスターストライク風なイベントを実装する
+    // 最初はユニティちゃんを動かすモードで始める
+    isTouchModeMonsterStrike = false;
+    getEventDispatcher()->pauseEventListenersForTarget(this);
+}
+
