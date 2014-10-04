@@ -1,5 +1,7 @@
 #include "AppDelegate.h"
 #include "HelloWorldScene.h"
+//#include "CCGLViewProtocol.h"
+//#include "platform/CCGLViewProtocol.h"
 
 USING_NS_CC;
 
@@ -19,7 +21,10 @@ bool AppDelegate::applicationDidFinishLaunching() {
         glview = GLView::create("My Game");
         director->setOpenGLView(glview);
     }
+    // iPhone4inchサイズでデザインする
+    glview->setDesignResolutionSize(960, 640, ResolutionPolicy::SHOW_ALL);
 
+    
     // turn on display FPS
     director->setDisplayStats(true);
 
