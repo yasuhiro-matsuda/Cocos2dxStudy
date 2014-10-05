@@ -26,6 +26,10 @@ bool HelloWorld::init()
     {
         return false;
     }
+    
+    CocosDenshion::SimpleAudioEngine::getInstance()->preloadBackgroundMusic("042.mp3");
+    CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("se_maoudamashii_explosion06.mp3");
+    CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic("042.mp3", true);
 
 //    Size visibleSize = Director::getInstance()->getVisibleSize();
     
@@ -577,6 +581,7 @@ void HelloWorld::onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *unused_even
     }
     else
     {
+        CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("se_maoudamashii_explosion06.mp3");
         unityChan->runAction(MoveBy::create(0.3f, (unityChan->getPosition()-touch->getLocation())*1.5));
     }
 }
